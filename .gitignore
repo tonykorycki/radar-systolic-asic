@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+.env
+venv/
+.venv/
+.ipynb_checkpoints/
+
+# Verilator / Cocotb
+obj_dir/
+sim_build/
+*.vcd
+*.fst
+*.lxt
+results.xml
+
+# Vivado
+*.jou
+*.log
+*.str
+.Xil/
+fpga_prototype/vivado/.cache/
+fpga_prototype/vivado/vivado_backup.jou
+
+# OpenLane
+openlane/runs/
+
+# KiCad
+*.bak
+*-backups/
+*.kicad_prl
+
+# Magic / Netgen / OpenROAD outputs
+*.mag.bak
+*.spice
+*.ext
+*.res.spef
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+*.swp
+*.swo
+*~
+.idea/
