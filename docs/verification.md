@@ -116,7 +116,7 @@ Cocotb + Verilator throughout. All testbench stimulus and checking in Python. Ea
 
 **Wishbone slave:**
 - Protocol compliance: `ack` timing, back-to-back transactions, read-after-write.
-- Full register map: every register readable/writable at correct offset and size. Confirm corrected sizes (WEIGHT_W1=256B, SAMPLE_DATA=128B, CHIRP_DATA=256B).
+- Full register map: every register readable/writable at correct offset and size. Confirm sizes match register map (WEIGHT_W1=256B, SAMPLE_DATA=256B, CHIRP_DATA=256B).
 - `STATUS.done` asserted only after full pipeline completion.
 - `STATUS.error` asserted on timeout, cleared only by `CTRL.reset`.
 - `STATUS.weights_valid` asserted after LOAD_WEIGHTS completes. Cleared by `CTRL.reset` or `CTRL.clear_weights_valid`.

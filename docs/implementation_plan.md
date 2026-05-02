@@ -31,7 +31,7 @@ This chip is a complete radar signal processing pipeline on a single Sky130 die.
 ## Repository structure
 
 ```
-radar-accelerator/
+radar-systolic-asic/
 ├── rtl/
 │   ├── interfaces.sv                  # frozen at M0
 │   ├── matched_filter.sv
@@ -57,7 +57,9 @@ radar-accelerator/
 │   ├── train.py
 │   ├── export_weights.py
 │   ├── weights_int8.bin               # synthetic-data trained weights (one-layer)
-│   └── weights_int8_v2.bin            # retrained after real captures
+│   ├── weights_int8_w1.bin            # two-layer config: Layer 1 weights
+│   ├── weights_int8_w2.bin            # two-layer config: Layer 2 weights
+│   └── weights_int8_v2.bin            # retrained after real captures (one-layer or _w1_v2/_w2_v2 if two-layer)
 ├── data/
 │   ├── synthetic/
 │   └── real_captures/

@@ -105,7 +105,7 @@ These are not open questions. Do not suggest reconsidering them.
 
 **LVDS interface:** External SN65LVDS1 line receivers on carrier PCB convert IWR6843 LVDS differential pairs to 1.8V single-ended signals before reaching Sky130 GPIO pads. Do not suggest receiving LVDS directly on Sky130 GPIO — both P and N lines sit above Sky130's ~0.9V input trip point and this does not work.
 
-**Pin assignment:** LVDS input on io_in[15:18] (North die edge). UART on io_in/out[5:6]. Do not suggest reassigning these.
+**Pin assignment:** LVDS input on io_in[15:18] (North die edge). UART on io_in/out[5:6]. SPI debug path on io_in/out[23:26] (PYNQ-Z2 Pmod, optional bringup interface). Debug status output on io_out[19:22]. Do not suggest reassigning these.
 
 **Neural network topology:** Locked at Milestone 0 by empirical test (Model A vs Model B low-SNR accuracy comparison — see `docs/verification.md`). Do not suggest a topology change after M0.
 

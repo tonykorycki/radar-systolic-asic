@@ -68,7 +68,7 @@ Once weights are loaded, `STATUS.weights_valid` is set. Subsequent inferences sk
 | LVDS frame clock | IN | io_in[18] | North edge. After SN65LVDS1 line receiver |
 | UART TX | OUT | io_out[6] | Caravel management UART |
 | UART RX | IN | io_in[5] | Caravel management UART |
-| SPI (PYNQ-Z2 debug path) | IN/OUT | io_in/out[23:26] | Optional host interface via PYNQ-Z2 Pmod |
+| SPI (PYNQ-Z2 debug path) | IN/OUT | io_in/out[23:26] | Optional debug host interface via PYNQ-Z2 Pmod. Level-shifted by TXS0104 on carrier PCB. |
 | Debug status | OUT | io_out[19:22] | Bringup visibility |
 
 Pins io_in[15:18] are all on the North die edge per the Caravel pin order config — 4 consecutive pads, minimal internal routing to the `radar_input_interface` module placed in the northern floorplan region.
@@ -265,7 +265,7 @@ IDLE → LOAD_WEIGHTS → LOAD_SAMPLES → RUN_FILTER → RUN_SYSTOLIC (tile 0�
 
 - `IDLE`: waiting for `CTRL.start` (Wishbone mode) or `frame_ready` (LVDS streaming mode).
 
-- `LOAD_WEIGHTS`: streams weight data from the Wishbone write buffer into systolic PE registers. On completion, sets `STATUS.weights_valid`. Skipped entirely if `weights_valid` is already set. For two-layer config, loads W1 first; the second weight load (W2) happens after Layer 1 ACTIVATE.
+- `LOAD_WEIGHTS`: streams weight data from the Wishbone write buffer into systolic PE registers. On completion, sets `STATUS.weights_valid`. Skipped entirely if `weights_valid` is already set (applies to W1 only). For two-layer config, this state is also re-entered after Layer 1 ACTIVATE to unconditionally load W2 — there is no valid-skip for W2.
 
 - `LOAD_SAMPLES`: streams radar samples from the Wishbone write buffer into the sample buffer. **Wishbone mode only.** In LVDS mode this state is skipped — the FSM transitions directly LOAD_WEIGHTS → RUN_FILTER because samples are already buffered by `radar_input_interface`.
 
@@ -275,7 +275,7 @@ IDLE → LOAD_WEIGHTS → LOAD_SAMPLES → RUN_FILTER → RUN_SYSTOLIC (tile 0�
   - If t=0: assert `clear`, then assert `compute` with input slice x_compressed[0:15]. After `systolic.done`, increment t.
   - If t=1..3: do **not** assert `clear`. Assert `compute` with x_compressed[t*16 : t*16+15]. After `systolic.done`, increment t.
   - After t=3 completes, transition to ACTIVATE.
-  - For two-layer config: after ACTIVATE (Layer 1), the FSM re-enters LOAD_WEIGHTS (for W2, if not already loaded), resets t=0, and re-enters RUN_SYSTOLIC for a single pass (Layer 2 has 16 inputs, so only one pass with t=0 needed).
+  - For two-layer config: after ACTIVATE (Layer 1), the FSM unconditionally reloads W2 into the PE registers via LOAD_WEIGHTS, resets t=0, and re-enters RUN_SYSTOLIC for a single pass (Layer 2 has 16 inputs, so only one pass with t=0 needed). W2 has no valid-skip mechanism — weights_valid tracks W1 only and is auto-cleared on DONE entry in two-layer mode.
 
 - `ACTIVATE`: passes the INT32 accumulator outputs through the combinational activation unit (bias → requantize → ReLU → clip). One-cycle latency.
 
