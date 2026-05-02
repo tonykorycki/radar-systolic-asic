@@ -2,6 +2,11 @@
 
 This file gives an AI assistant (or a new contributor) the context needed to be immediately useful on this project. Read it before helping with any task. Do not suggest alternatives to decisions marked **[FROZEN]** — those are finalized and not up for debate.
 
+If using Claude Code or other agent tools, make your CLAUDE.md or whatever corresponding file contain this line (can even be just this line):
+
+See [docs/AGENTS.md](docs/AGENTS.md) for project context, frozen decisions, and coding conventions.
+
+
 ---
 
 ## What this project is
