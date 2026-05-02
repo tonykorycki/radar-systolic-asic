@@ -10,11 +10,11 @@ Target submission: Spring 2027.
 
 | Document | Purpose |
 |---|---|
-| [docs/architecture.md](docs/architecture.md) | Module descriptions, port tables, register map, FSM states |
-| [docs/verification.md](docs/verification.md) | Golden models, NN topology decision, per-module test plans |
-| [docs/milestones.md](docs/milestones.md) | Build plan, milestone deliverables, gate policy |
+| [docs/architecture.md](docs/architecture.md) | Module descriptions, port tables, register map, FSM states, document index, repo structure |
+| [docs/verification.md](docs/verification.md) | Golden models, NN topology decision, per-module test plans, sign-off criteria |
+| [docs/milestones.md](docs/milestones.md) | Build plan, milestone deliverables, group responsibilities, gate policy |
 | [docs/hardware.md](docs/hardware.md) | Carrier PCB, IWR6843ISK interface, connection paths |
-| [docs/AGENTS.md](docs/AGENTS.md) | Context for AI assistants and new contributors — frozen decisions, conventions, toolchain |
+| [docs/AGENTS.md](docs/AGENTS.md) | Contributor reference — frozen decisions, coding conventions, toolchain |
 
 Start with `docs/architecture.md` for the design, `docs/milestones.md` for the schedule, and `docs/AGENTS.md` for coding conventions and what not to change.
 
@@ -66,4 +66,4 @@ flow.tcl -design radar_accel
 
 DSP Group · Accelerator Group · Integration Group · Verification & Backend Group
 
-See [docs/architecture.md](docs/architecture.md) for module ownership assignments.
+See [docs/milestones.md](docs/milestones.md) for module ownership and group responsibilities per milestone.

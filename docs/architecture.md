@@ -329,9 +329,9 @@ All Caravel harness signals (`wb_clk_i`, `wb_rst_i`, Wishbone bus, `io_in`, `io_
 
 | Document | Contents |
 |---|---|
-| [docs/architecture.md](architecture.md) | IP definition, module descriptions, interface tables, register map, FSM states, repo structure |
+| [docs/architecture.md](architecture.md) | IP definition, module descriptions, interface tables, register map, FSM states, repo structure, document index |
 | [docs/verification.md](verification.md) | Golden models, NN topology decision procedure, per-module test plans, sign-off criteria |
-| [docs/milestones.md](milestones.md) | Incremental build plan — milestone deliverables and gate policy |
+| [docs/milestones.md](milestones.md) | Project overview, incremental build plan — milestone deliverables, group responsibilities, gate policy |
 | [docs/hardware.md](hardware.md) | IWR6843ISK, carrier PCB design requirements, connection paths |
 | [docs/AGENTS.md](AGENTS.md) | Contributor reference — frozen decisions, coding conventions, toolchain |
 | docs/register_map.md | **Frozen at M0** — final Wishbone register layout (canonical source post-M0) |
