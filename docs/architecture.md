@@ -247,12 +247,11 @@ Orchestrates the full pipeline. All transitions are registered. No combinational
                     ┌── (if weights_valid: skip LOAD_WEIGHTS) ──────────────────┐
                     │                                                            │
 IDLE → LOAD_WEIGHTS → LOAD_SAMPLES → RUN_FILTER → RUN_SYSTOLIC (tile 0–3) → ACTIVATE → DONE → IDLE
-                    │              │                │                         │
-                    │              └─(LVDS mode:   └──(clear on tile 0 only) └─(two-layer:
-                    │                skip to         increment tile counter,    load W2, reset
-                    └──(LVDS mode:   RUN_FILTER)     loop back for tiles 1–3)  tile counter,
-                       skip to                                                  re-enter
-                       RUN_FILTER)                                              RUN_SYSTOLIC)
+                    │                               │                         │
+                    │                              └──(clear on tile 0 only) └─(two-layer:
+                    └──(LVDS mode: skip              increment tile counter,    reload W2,
+                       LOAD_SAMPLES →                loop back for tiles 1–3)  reset tile counter,
+                       RUN_FILTER)                                              re-enter RUN_SYSTOLIC)
                                         │
                  ERROR ◄── any stage exceeds TIMEOUT ─────────────────────────┘
 ```
@@ -277,7 +276,7 @@ IDLE → LOAD_WEIGHTS → LOAD_SAMPLES → RUN_FILTER → RUN_SYSTOLIC (tile 0�
   - After t=3 completes, transition to ACTIVATE.
   - For two-layer config: after ACTIVATE (Layer 1), the FSM unconditionally reloads W2 into the PE registers via LOAD_WEIGHTS, resets t=0, and re-enters RUN_SYSTOLIC for a single pass (Layer 2 has 16 inputs, so only one pass with t=0 needed). W2 has no valid-skip mechanism — weights_valid tracks W1 only and is auto-cleared on DONE entry in two-layer mode.
 
-- `ACTIVATE`: passes the INT32 accumulator outputs through the combinational activation unit (bias → requantize → ReLU → clip). One-cycle latency.
+- `ACTIVATE`: passes the INT32 accumulator outputs through the combinational activation unit (bias → requantize → ReLU → clip). The activation unit itself is purely combinational; the FSM spends one clock cycle in this state to allow combinational logic to settle, then registers the result on the next rising edge before transitioning to DONE.
 
 - `DONE`: writes result to output register, asserts `STATUS.done`. Returns to IDLE on next start. In two-layer mode, automatically clears `STATUS.weights_valid` on entry to DONE — the PEs hold W2 at this point, not W1, so the next inference must reload W1.
 
@@ -307,5 +306,104 @@ Mode select: `CTRL[2]` = 0 selects Wishbone preload; `CTRL[2]` = 1 selects LVDS 
 | `frame_ready` | OUT | 1 | One complete chirp buffered, asserted to FSM |
 | `samples_out` | OUT | `2*16*N` | Buffered complex IQ samples to matched filter |
 | `clk`, `rst` | IN | 1 | Internal clock domain |
+
+#### 2.7 Top-level (`top.sv`)
+
+**File:** `rtl/top.sv`
+
+Instantiates all six modules and wires them together. Has no logic of its own — all datapath and control logic lives in the submodules.
+
+Internal connections:
+- `radar_input_interface.samples_out` → `matched_filter.samples_in` (muxed with Wishbone sample buffer in Wishbone mode)
+- `matched_filter.x_compressed` → `systolic_array.x_in` (with 16→8 bit quantization at this boundary)
+- `systolic_array.y_out` → `activation_unit.acc_in`
+- `activation_unit.y_out` → `wishbone_slave` result register
+- `wishbone_slave` register outputs → `matched_filter.chirp_reg`, `systolic_array.weight_in`, `activation_unit.bias_in`, `activation_unit.scale`
+- `control_fsm` drives all `start`/`load`/`clear`/`compute` control signals across all modules
+
+All Caravel harness signals (`wb_clk_i`, `wb_rst_i`, Wishbone bus, `io_in`, `io_out`) connect at this level.
+
+---
+
+## 3. Document index
+
+| Document | Contents |
+|---|---|
+| [docs/architecture.md](architecture.md) | IP definition, module descriptions, interface tables, register map, FSM states, repo structure |
+| [docs/verification.md](verification.md) | Golden models, NN topology decision procedure, per-module test plans, sign-off criteria |
+| [docs/milestones.md](milestones.md) | Incremental build plan — milestone deliverables and gate policy |
+| [docs/hardware.md](hardware.md) | IWR6843ISK, carrier PCB design requirements, connection paths |
+| [docs/AGENTS.md](AGENTS.md) | Contributor reference — frozen decisions, coding conventions, toolchain |
+| docs/register_map.md | **Frozen at M0** — final Wishbone register layout (canonical source post-M0) |
+| docs/parameter_choices.md | **Frozen at M0** — FFT size, array dimensions, clock target justification |
+| docs/pin_assignment.md | **Frozen at M0** — Caravel pad assignments |
+| docs/carrier_pcb_notes.md | Component choices and layout notes for carrier PCB |
+
+---
+
+## 4. Repository structure
+
+```
+radar-accel-asic/
+├── rtl/
+│   ├── interfaces.sv                  # frozen at M0
+│   ├── matched_filter.sv
+│   ├── systolic_array.sv
+│   ├── activation_unit.sv
+│   ├── wishbone_slave.sv
+│   ├── control_fsm.sv
+│   ├── radar_input_interface.sv
+│   └── top.sv
+├── tb/
+│   ├── test_matched_filter.py
+│   ├── test_systolic.py
+│   ├── test_activation.py
+│   ├── test_wishbone.py
+│   ├── test_fsm.py
+│   ├── test_radar_input.py
+│   └── test_top.py
+├── golden/
+│   ├── golden_model_float.py
+│   ├── golden_model_fixed.py
+│   ├── precision_sweep.py
+│   ├── generate_dataset.py
+│   ├── train.py
+│   ├── export_weights.py
+│   ├── weights_int8.bin               # synthetic-data trained weights (one-layer)
+│   ├── weights_int8_w1.bin            # two-layer config: Layer 1 weights
+│   ├── weights_int8_w2.bin            # two-layer config: Layer 2 weights
+│   └── weights_int8_v2.bin            # retrained after real captures
+├── data/
+│   ├── synthetic/
+│   └── real_captures/
+├── fpga_prototype/
+│   ├── vivado/
+│   └── notebooks/
+├── hardware/
+│   └── carrier_pcb/                   # KiCad schematic + layout
+├── firmware/
+│   └── picorv32/
+├── openlane/
+│   └── config.json
+├── results/
+│   ├── precision_sweep/
+│   ├── m0_layer_decision/             # Model A vs B accuracy comparison
+│   ├── unit/
+│   ├── integration/
+│   ├── fpga_prototype/
+│   ├── synth/
+│   ├── pnr/
+│   └── signoff/
+└── docs/
+    ├── architecture.md
+    ├── verification.md
+    ├── milestones.md
+    ├── hardware.md
+    ├── AGENTS.md
+    ├── register_map.md                # frozen at M0
+    ├── parameter_choices.md           # frozen at M0
+    ├── pin_assignment.md              # frozen at M0
+    └── carrier_pcb_notes.md
+```
 
 ---

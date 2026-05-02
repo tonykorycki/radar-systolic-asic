@@ -238,10 +238,10 @@ Clock period is 40ns (25 MHz). Always reset for exactly one cycle before driving
                     ┌── (weights_valid set: skip LOAD_WEIGHTS) ──────────────────┐
                     │                                                             │
 IDLE → LOAD_WEIGHTS → LOAD_SAMPLES → RUN_FILTER → RUN_SYSTOLIC → ACTIVATE → DONE → IDLE
-                    │              │               (×4 tiles,     (×2 if        │
-                    └─(LVDS mode:  └─(LVDS mode:   clear on t=0   two-layer)    │
-                       skip to        skip to       only)                        │
-                       RUN_FILTER)    RUN_FILTER)                                │
+                    │                              (×4 tiles,     (×2 if        │
+                    └─(LVDS mode: skip              clear on t=0   two-layer)    │
+                       LOAD_SAMPLES →               only)                        │
+                       RUN_FILTER)                                               │
                                                                                  │
                          ERROR ◄─── any stage exceeds TIMEOUT ──────────────────┘
 ```

@@ -1,6 +1,6 @@
 # Build Plan and Milestones
 
-## 4. Incremental Build Plan
+## Incremental Build Plan
 
 Gate policy: each milestone must be signed off before the next begins. No module advances to integration without passing its unit testbench against `golden_model_fixed.py`.
 

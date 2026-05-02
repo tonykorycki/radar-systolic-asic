@@ -1,6 +1,6 @@
 # Verification Strategy
 
-### Golden models
+## Golden models
 
 Two Python reference implementations in `golden/`. Both must be written and validated before any RTL is written.
 
@@ -10,7 +10,7 @@ Two Python reference implementations in `golden/`. Both must be written and vali
 
 **`golden/precision_sweep.py`:** Runs the fixed-point model at Q8.8, Q12.4, Q16.16 input widths on synthetic chirps with 40dB dynamic range. Measures classification accuracy at each precision. Must be run and results committed before Milestone 0 closes — it is the empirical justification for the 16-bit input width decision.
 
-### Neural network topology decision (Milestone 0)
+## Neural network topology decision (Milestone 0)
 
 The choice between a one-layer and two-layer network is locked at Milestone 0 by empirical test. This decision gates `interfaces.sv` and the final Wishbone register map. No RTL may be written until it is resolved.
 
@@ -40,7 +40,7 @@ The choice between a one-layer and two-layer network is locked at Milestone 0 by
 - `BIAS[0:15]` holds Layer 1 bias; `BIAS[16:23]` holds Layer 2 bias.
 - `golden_model_fixed.py` must implement the full two-pass inference including both bias additions.
 
-### Neural network training
+## Neural network training
 
 The INT8 weight matrix (or matrices) must be trained and ready before Milestone 2. This is a parallel workstream starting at Milestone 1, owned by one person on the Verification & Backend group.
 
@@ -71,7 +71,7 @@ Capture IQ frames from IWR6843ISK using DCA1000EVM + mmWave Studio. Place a corn
 
 **IWR6843 chirp configuration:** 4GHz bandwidth, 40μs ramp time, 128 samples per chirp decimated to 64 for N=64 FFT, 60GHz center frequency. Range resolution: ~3.75cm per bin. Maximum unambiguous range: ~15m at this decimation.
 
-### Simulating the LVDS path without hardware
+## Simulating the LVDS path without hardware
 
 All LVDS tests run entirely in Verilator simulation using a Python bit serializer. No IWR6843, DCA1000EVM, or line receivers are needed until Milestone 2.5. The `radar_input_interface` unit test and the top-level LVDS integration test both use this approach.
 
@@ -86,11 +86,11 @@ The serializer must be written against the IWR6843 LVDS output protocol document
 
 **Async FIFO stress test:** Run the bit serializer at several clock ratios relative to the chip clock (e.g., 0.9×, 1.1×, 1.5×, 2.3×). Verify no samples are dropped or corrupted across all ratios. CDC bugs that would only appear with real hardware are caught here.
 
-### Testbench framework
+## Testbench framework
 
 Cocotb + Verilator throughout. All testbench stimulus and checking in Python. Each module has a standalone Cocotb testbench with its own `Makefile`. The golden model and RTL checking live in the same Python file — no re-implementation of signal processing in SystemVerilog.
 
-### Per-module test plan
+## Per-module test plan
 
 **Matched filter:**
 - FFT butterfly against `np.fft.fft` on random complex vectors. Check magnitude and phase within fixed-point quantization error.
@@ -147,7 +147,7 @@ Cocotb + Verilator throughout. All testbench stimulus and checking in Python. Ea
 - Timeout recovery: stall a stage mid-inference, verify ERROR, write CTRL.reset, verify clean restart.
 - Minimum 50 distinct test vectors with varied target ranges and weight matrices.
 
-### Sign-off criteria
+## Sign-off criteria
 
 | Check | Tool | Pass condition |
 |---|---|---|
